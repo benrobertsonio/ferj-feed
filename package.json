@@ -1,0 +1,16 @@
+{
+  "name": "ferj-feed",
+  "version": "0.0.1",
+  "description": "Automate the feed for Front End Remote Jobs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Robertson",
+  "license": "",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "rss-parser": "^3.5.4",
+    "wpapi": "^1.1.2"
+  }
+}
