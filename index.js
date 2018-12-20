@@ -31,8 +31,16 @@ const getJobs = (feed, site) => {
     const job = {
       title,
       content,
+      company: '',
       date: pubDate,
       url: link
+    }
+
+    // Split job title / company.
+    if (job.title.toLowerCase().includes(' at ')) {
+      const [ title, company ] = job.title.split(' at ');
+      job.title = title;
+      job.company = company.split(' (')[0];
     }
 
     // If site is codepen, only return remote positions.
@@ -76,13 +84,13 @@ const getJobs = (feed, site) => {
 // Create job post in WordPress.
 const createPost = (job) => {
   wp.then(site => {
-    console.log(site.jobs());
     // TODO: Check if post exists before creating a new one.
     site.jobs().create({
       title: job.title,
       content: job.content,
       fields: {
         apply_url: job.url,
+        company: job.company,
       }
     }).then((response) => {
       console.log(response && response.id);
