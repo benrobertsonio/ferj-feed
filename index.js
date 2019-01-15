@@ -5,16 +5,12 @@ require('dotenv').config({
 });
 
 // Discover WP endpoints.
-const wp =
-  WPAPI
-    .discover(process.env.SITE_URL)
-      .then((site) => (
-        site.auth({
-          username: process.env.WP_USER,
-          password: process.env.PW,
-        })
-      )
-    );
+const wp = WPAPI.discover(process.env.SITE_URL).then((site) => (site.auth({
+      username: process.env.WP_USER,
+      password: process.env.PW,
+    })
+  )
+);
 
 const parser = new RSSParser();
 
