@@ -42,7 +42,7 @@ const getJobs = (feed, site) => {
     // If site is codepen, only return remote positions.
     if (
       site === 'https://codepen.io/jobs/feed/' &&
-      !job.content.includes('Full-Time Remote Position')
+      !job.content.includes('Full Time Remote Position')
     ) return;
 
     // Only get front end positions from We Work Remotely.
