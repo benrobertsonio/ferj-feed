@@ -4,6 +4,8 @@ require('dotenv').config({
   path: '.env',
 });
 
+const daysAgo = 2;
+
 // Discover WP endpoints.
 const wp = WPAPI.discover(process.env.SITE_URL).then((site) => (site.auth({
       username: process.env.WP_USER,
@@ -32,6 +34,25 @@ const getJobs = (feed, site) => {
       url: link
     }
 
+    const isNotFrontEnd = !job.title.toLowerCase().includes('front end')
+    && !job.title.toLowerCase().includes('front-end')
+    && !job.title.toLowerCase().includes('frontend')
+    && !job.title.toLowerCase().includes('ui');
+
+    if (site === 'https://authenticjobs.com/rss/index.xml') {
+      const isRemote = rest.contentSnippet.indexOf('(Anywhere)') == 0;
+      if (isRemote && !isNotFrontEnd) {
+        // Split job title / company.
+        if (job.title.toLowerCase().includes(': ')) {
+          const [ title, company ] = job.title.split(': ');
+          job.title = title;
+          job.company = company.split(' (')[0];
+        }
+      } else {
+        return;
+      }
+    }
+
     // Split job title / company.
     if (job.title.toLowerCase().includes(' at ')) {
       const [ title, company ] = job.title.split(' at ');
@@ -49,12 +70,7 @@ const getJobs = (feed, site) => {
     if (
       site === 'https://weworkremotely.com/remote-jobs.rss'
     ) {
-      if (
-        !job.title.toLowerCase().includes('front end')
-        && !job.title.toLowerCase().includes('front-end')
-        && !job.title.toLowerCase().includes('frontend')
-        && !job.title.toLowerCase().includes('ui')
-       ) return;
+      if (isNotFrontEnd) return;
     }
 
     jobs.push(job);
@@ -68,7 +84,6 @@ const getJobs = (feed, site) => {
   });
 
   // Only get jobs posted since x daysAgo.
-  const daysAgo = 1;
   const filtered = jobs.filter((job) => {
     const filter = new Date(new Date().setDate(new Date().getDate() - daysAgo));
     return new Date(job.date) > filter;
@@ -101,7 +116,8 @@ const createPost = (job) => {
     'https://codepen.io/jobs/feed/',
     'https://stackoverflow.com/jobs/feed?q="front+end"&r=true', // b=FirstApplicants
     'https://remoteok.io/remote-front-end-jobs.rss',
-    'https://weworkremotely.com/remote-jobs.rss', // filter by job title?
+    // 'https://weworkremotely.com/remote-jobs.rss', // filter by job title?
+    'https://authenticjobs.com/rss/index.xml',
   ];
 
   FEED_LIST.forEach(async (url) => {
