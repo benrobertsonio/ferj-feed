@@ -4,7 +4,7 @@ require('dotenv').config({
   path: '.env',
 });
 
-const daysAgo = 2;
+const daysAgo = 1;
 
 // Discover WP endpoints.
 const wp = WPAPI.discover(process.env.SITE_URL).then((site) => (site.auth({
@@ -18,13 +18,23 @@ const parser = new RSSParser();
 
 // Return a feed.
 const getFeed = async (url) => {
-  return await parser.parseURL(url);
+  try {
+    return await parser.parseURL(url);
+  } catch (e) {
+    console.error(e.stack);
+  }
 }
 
 const getJobs = (feed, site) => {
   const jobs = [];
   // Loop through all feed items.
   feed.items.forEach(({ title, content, link, pubDate, ...rest }) => {
+
+    // Only get jobs posted since x daysAgo.
+    const filter = new Date(new Date().setDate(new Date().getDate() - daysAgo));
+    if(!(new Date(pubDate) > filter)) {
+      return;
+    }
 
     const job = {
       title,
@@ -83,13 +93,7 @@ const getJobs = (feed, site) => {
     return a > b ? -1 : a < b ? 1 : 0;
   });
 
-  // Only get jobs posted since x daysAgo.
-  const filtered = jobs.filter((job) => {
-    const filter = new Date(new Date().setDate(new Date().getDate() - daysAgo));
-    return new Date(job.date) > filter;
-  })
-
-  return filtered;
+  return jobs;
 }
 
 // Create job post in WordPress.
@@ -104,7 +108,7 @@ const createPost = (job) => {
         company: job.company,
       }
     }).then((response) => {
-      console.log(response && response.id);
+      console.log(response && response.id, job.title, job.company);
     })
   })
 }
@@ -115,22 +119,26 @@ const createPost = (job) => {
   const FEED_LIST = [
     'https://codepen.io/jobs/feed/',
     'https://stackoverflow.com/jobs/feed?q="front+end"&r=true', // b=FirstApplicants
-    'https://remoteok.io/remote-front-end-jobs.rss',
-    // 'https://weworkremotely.com/remote-jobs.rss', // filter by job title?
+    // 'https://remoteok.io/remote-front-end-jobs.rss',
+    'https://weworkremotely.com/remote-jobs.rss', // filter by job title?
     'https://authenticjobs.com/rss/index.xml',
   ];
 
   FEED_LIST.forEach(async (url) => {
-    // Get feed details.
-    const feed = await getFeed(url);
-    // Get jobs.
-    const jobs = await getJobs(feed, url);
+    try {
+      // Get feed details.
+      const feed = await getFeed(url);
+      // Get jobs.
+      const jobs = await getJobs(feed, url);
 
-    // Print feed name and how many jobs were found.
-    console.log( feed.title, jobs.length );
+      // Print feed name and how many jobs were found.
+      console.log( feed.title, jobs.length );
 
-    // For each job, create a new job post.
-    jobs.forEach((job) => createPost(job));
+      // For each job, create a new job post.
+      jobs.forEach((job) => createPost(job));
+    } catch (e) {
+      console.error(e.stack);
+    }
   });
 })();
 
