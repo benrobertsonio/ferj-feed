@@ -120,6 +120,7 @@ const createPost = (job) => {
 (() => {
 
   const FEED_LIST = [
+    'https://jobs.github.com/positions.atom',
     'https://codepen.io/jobs/feed/',
     'https://stackoverflow.com/jobs/feed?q="front+end"&r=true', // b=FirstApplicants
     // 'https://remoteok.io/remote-front-end-jobs.rss',
