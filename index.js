@@ -47,7 +47,8 @@ const getJobs = (feed, site) => {
     const isNotFrontEnd = !job.title.toLowerCase().includes('front end')
     && !job.title.toLowerCase().includes('front-end')
     && !job.title.toLowerCase().includes('frontend')
-    && !job.title.toLowerCase().includes('ui');
+    && !job.title.toLowerCase().includes('ui')
+    && !job.title.toLowerCase().includes('ux');
 
     if (site === 'https://authenticjobs.com/rss/index.xml') {
       const isRemote = rest.contentSnippet.indexOf('(Anywhere)') == 0;
@@ -78,7 +79,9 @@ const getJobs = (feed, site) => {
 
     // Only get front end positions from We Work Remotely.
     if (
-      site === 'https://weworkremotely.com/remote-jobs.rss'
+      site === 'https://weworkremotely.com/remote-jobs.rss' ||
+      site === 'https://jobs.github.com/positions.atom' ||
+      site === 'https://stackoverflow.com/jobs/feed?q="front+end"&r=true'
     ) {
       if (isNotFrontEnd) return;
     }
