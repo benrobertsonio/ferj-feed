@@ -6,10 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "fetch-jobs": "bin/fetch-jobs"
+  },
   "author": "Ben Robertson",
   "license": "",
   "dependencies": {
+    "arg": "^4.1.1",
+    "chalk": "^2.4.2",
     "dotenv": "^6.2.0",
+    "esm": "^3.2.25",
+    "inquirer": "^7.0.0",
     "rss-parser": "^3.5.4",
     "wpapi": "^1.1.2"
   }
