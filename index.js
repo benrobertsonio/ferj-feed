@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const RSSParser = require('rss-parser');
 const WPAPI = require('wpapi');
 require('dotenv').config({
