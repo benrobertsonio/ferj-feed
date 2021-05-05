@@ -8,12 +8,11 @@ require('dotenv').config({
 const daysAgo = 1;
 
 // Discover WP endpoints.
-const wp = WPAPI.discover(process.env.SITE_URL).then((site) => (site.auth({
-      username: process.env.WP_USER,
-      password: process.env.PW,
-    })
-  )
-);
+const wpConnect = WPAPI.discover({
+  endpoint: process.env.SITE_URL,
+  username: process.env.WP_USER,
+  password: process.env.PW
+});
 
 const parser = new RSSParser();
 
@@ -33,7 +32,7 @@ const getJobs = (feed, site) => {
 
     // Only get jobs posted since x daysAgo.
     const filter = new Date(new Date().setDate(new Date().getDate() - daysAgo));
-    if(!(new Date(pubDate) > filter)) {
+    if (!(new Date(pubDate) > filter)) {
       return;
     }
 
@@ -46,17 +45,17 @@ const getJobs = (feed, site) => {
     }
 
     const isNotFrontEnd = !job.title.toLowerCase().includes('front end')
-    && !job.title.toLowerCase().includes('front-end')
-    && !job.title.toLowerCase().includes('frontend')
-    && !job.title.toLowerCase().includes('ui')
-    && !job.title.toLowerCase().includes('ux');
+      && !job.title.toLowerCase().includes('front-end')
+      && !job.title.toLowerCase().includes('frontend')
+      && !job.title.toLowerCase().includes('ui')
+      && !job.title.toLowerCase().includes('ux');
 
     if (site === 'https://authenticjobs.com/rss/index.xml') {
       const isRemote = rest.contentSnippet.indexOf('(Anywhere)') == 0;
       if (isRemote && !isNotFrontEnd) {
         // Split job title / company.
         if (job.title.toLowerCase().includes(': ')) {
-          const [ title, company ] = job.title.split(': ');
+          const [title, company] = job.title.split(': ');
           job.title = title;
           job.company = company.split(' (')[0];
         }
@@ -67,7 +66,7 @@ const getJobs = (feed, site) => {
 
     // Split job title / company.
     if (job.title.toLowerCase().includes(' at ')) {
-      const [ title, company ] = job.title.split(' at ');
+      const [title, company] = job.title.split(' at ');
       job.title = title;
       job.company = company.split(' (')[0];
     }
@@ -102,9 +101,9 @@ const getJobs = (feed, site) => {
 
 // Create job post in WordPress.
 const createPost = (job) => {
-  wp.then(site => {
+  wpConnect.then((site) =>
     // TODO: Check if post exists before creating a new one.
-    site.jobs().create({
+    wp.jobs().create({
       title: job.title,
       content: job.content,
       fields: {
@@ -114,7 +113,7 @@ const createPost = (job) => {
     }).then((response) => {
       console.log(response && response.id, job.title, job.company);
     })
-  })
+  )
 }
 
 
@@ -137,7 +136,7 @@ const createPost = (job) => {
       const jobs = await getJobs(feed, url);
 
       // Print feed name and how many jobs were found.
-      console.log( feed.title, jobs.length );
+      console.log(feed.title, jobs.length);
 
       // For each job, create a new job post.
       jobs.forEach((job) => createPost(job));
